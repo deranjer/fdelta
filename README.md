@@ -1,4 +1,4 @@
-Golang delta compression algorithm
+Delta compression algorithm written in Go
 ===
 Fossil achieves efficient storage and low-bandwidth synchronization through the
 use of delta-compression. Instead of storing or transmitting the complete
@@ -15,14 +15,9 @@ Other implementations:
 - [Python](https://github.com/ggicci/python-fossil-delta)
 - [JavaScript](https://github.com/dchest/fossil-delta-js) ([Online demo](https://dchest.github.io/fossil-delta-js/))
 
-### Installation:
-#### Install:
-```go
-$ go get -u github.com/mdvan/fdelta
+### Install
 ```
-#### Import:
-```go
-import "github.com/mdvan/fdelta"
+$ go get -u github.com/mdvan/fdelta
 ```
 ### Example
 ```go
