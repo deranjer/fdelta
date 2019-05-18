@@ -2,7 +2,7 @@ package fdelta
 
 import "errors"
 
-const nHASH = 16
+const nHashSize = 16
 
 //Create returns the difference between origin and target
 func Create(origin, target []byte) []byte {
@@ -15,7 +15,7 @@ func Create(origin, target []byte) []byte {
 	zDelta.PutInt(uint32(lenOut))
 	zDelta.PutChar('\n')
 
-	if lenSrc <= nHASH {
+	if lenSrc <= nHashSize {
 		zDelta.PutInt(uint32(lenOut))
 		zDelta.PutChar(':')
 		zDelta.PutArray(target, 0, lenOut)
@@ -24,7 +24,7 @@ func Create(origin, target []byte) []byte {
 		return zDelta.ToArray()
 	}
 
-	nHash := lenSrc / nHASH
+	nHash := lenSrc / nHashSize
 	collide := make([]int, nHash)
 	landmark := make([]int, nHash)
 
@@ -38,16 +38,16 @@ func Create(origin, target []byte) []byte {
 
 	hv := int(0)
 	h := newRollingHash()
-	for i = 0; i < lenSrc-nHASH; i += nHASH {
+	for i = 0; i < lenSrc-nHashSize; i += nHashSize {
 		h.Init(origin, i)
 		hv = int(h.Value() % uint32(nHash))
-		collide[i/nHASH] = landmark[hv]
-		landmark[hv] = i / nHASH
+		collide[i/nHashSize] = landmark[hv]
+		landmark[hv] = i / nHashSize
 	}
 
 	var _base, iSrc, iBlock, bestCnt, bestOfst, bestLitsz int
 
-	for _base+nHASH < lenOut {
+	for _base+nHashSize < lenOut {
 		bestOfst = 0
 		bestLitsz = 0
 		h.Init(target, _base)
@@ -67,7 +67,7 @@ func Create(origin, target []byte) []byte {
 				var j, k, x, y int
 				var sz int
 
-				iSrc = iBlock * nHASH
+				iSrc = iBlock * nHashSize
 
 				x = iSrc
 				y = _base + i
@@ -123,7 +123,7 @@ func Create(origin, target []byte) []byte {
 				break
 			}
 
-			if _base+i+nHASH >= lenOut {
+			if _base+i+nHashSize >= lenOut {
 				zDelta.PutInt(uint32(lenOut - _base))
 				zDelta.PutChar(':')
 				zDelta.PutArray(target, _base, lenOut)
@@ -131,7 +131,7 @@ func Create(origin, target []byte) []byte {
 				break
 			}
 
-			h.Next(target[_base+i+nHASH])
+			h.Next(target[_base+i+nHashSize])
 			i++
 		}
 	}

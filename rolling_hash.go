@@ -10,17 +10,17 @@ func newRollingHash() *rollingHash {
 		a: 0,
 		b: 0,
 		i: 0,
-		z: make([]byte, nHASH),
+		z: make([]byte, nHashSize),
 	}
 }
 
 func (rHash *rollingHash) Init(z []byte, pos int) {
 	var a, b, x, i uint16
 
-	for i = 0; i < nHASH; i++ {
+	for i = 0; i < nHashSize; i++ {
 		x = uint16(z[pos+int(i)])
 		a = ((a + x) & 0xffff)
-		b = ((b + (nHASH-i)*x) & 0xffff)
+		b = ((b + (nHashSize-i)*x) & 0xffff)
 		rHash.z[i] = byte(x)
 	}
 	rHash.a = (a & 0xffff)
@@ -31,9 +31,9 @@ func (rHash *rollingHash) Init(z []byte, pos int) {
 func (rHash *rollingHash) Next(c byte) {
 	old := uint16(rHash.z[rHash.i])
 	rHash.z[rHash.i] = c
-	rHash.i = ((rHash.i + 1) & (nHASH - 1))
+	rHash.i = ((rHash.i + 1) & (nHashSize - 1))
 	rHash.a = (rHash.a - old + uint16(c))
-	rHash.b = (rHash.b - nHASH*old + rHash.a)
+	rHash.b = (rHash.b - nHashSize*old + rHash.a)
 }
 
 func (rHash *rollingHash) Value() uint32 {
