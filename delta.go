@@ -30,9 +30,6 @@ func Create(origin, target []byte) []byte {
 
 	for i = 0; i < nHash; i++ {
 		collide[i] = -1
-	}
-
-	for i = 0; i < nHash; i++ {
 		landmark[i] = -1
 	}
 
