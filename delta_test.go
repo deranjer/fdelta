@@ -4,93 +4,142 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDelta(t *testing.T) {
-	for i := 1; i <= 1; i++ {
-		origin, err := loadData(i, "origin")
-		if err != nil {
-			t.Error(err)
-		}
+	readFile := func(path string) []byte {
+		data, err := ioutil.ReadFile(
+			filepath.FromSlash(path),
+		)
+		assert.Nil(t, err)
+		return data
+	}
 
-		target, err := loadData(i, "target")
-		if err != nil {
-			t.Error(err)
-		}
+	tests := []struct {
+		origin        []byte
+		target        []byte
+		expectedDelta []byte
+	}{
+		{
+			origin:        readFile("data/1/origin"),
+			target:        readFile("data/1/target"),
+			expectedDelta: readFile("data/1/delta"),
+		},
+		{
+			origin:        readFile("data/2/origin"),
+			target:        readFile("data/2/target"),
+			expectedDelta: readFile("data/2/delta"),
+		},
+		{
+			origin:        readFile("data/3/origin"),
+			target:        readFile("data/3/target"),
+			expectedDelta: readFile("data/3/delta"),
+		},
+		{
+			origin:        readFile("data/4/origin"),
+			target:        readFile("data/4/target"),
+			expectedDelta: readFile("data/4/delta"),
+		},
+		{
+			origin:        readFile("data/5/origin"),
+			target:        readFile("data/5/target"),
+			expectedDelta: readFile("data/5/delta"),
+		},
+	}
 
-		goodDelta, err := loadData(i, "delta")
-		if err != nil {
-			t.Error(err)
-		}
-
-		delta := Create(origin, target)
-
-		_, err = Apply(origin, delta)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if !reflect.DeepEqual(delta, goodDelta) {
-			t.Error("deltas are not equal")
-		}
+	for _, test := range tests {
+		delta := Create(test.origin, test.target)
+		assert.Equal(t, test.expectedDelta, delta)
 	}
 }
 
 func BenchmarkCreateDelta(b *testing.B) {
-	for i := 1; i <= 5; i++ {
-		origin, err := loadData(i, "origin")
-		if err != nil {
-			b.Error(err)
-		}
+	readFile := func(path string) []byte {
+		data, err := ioutil.ReadFile(
+			filepath.FromSlash(path),
+		)
+		assert.Nil(b, err)
+		return data
+	}
 
-		target, err := loadData(i, "target")
-		if err != nil {
-			b.Error(err)
-		}
+	tests := []struct {
+		origin []byte
+		target []byte
+	}{
+		{
+			origin: readFile("data/1/origin"),
+			target: readFile("data/1/target"),
+		},
+		{
+			origin: readFile("data/2/origin"),
+			target: readFile("data/2/target"),
+		},
+		{
+			origin: readFile("data/3/origin"),
+			target: readFile("data/3/target"),
+		},
+		{
+			origin: readFile("data/4/origin"),
+			target: readFile("data/4/target"),
+		},
+		{
+			origin: readFile("data/5/origin"),
+			target: readFile("data/5/target"),
+		},
+	}
 
-		if err != nil {
-			b.Error(err)
-		}
-
-		b.Run(fmt.Sprintf("CreateDelta%d", i), func(b *testing.B) {
+	for i, test := range tests {
+		b.Run(fmt.Sprintf("CreateDelta%d", i + 1), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Create(origin, target)
+				Create(test.origin, test.target)
 			}
 		})
 	}
 }
 
 func BenchmarkApplyDelta(b *testing.B) {
-	for i := 1; i <= 5; i++ {
-		origin, err := loadData(i, "origin")
-		if err != nil {
-			b.Error(err)
-		}
+	readFile := func(path string) []byte {
+		data, err := ioutil.ReadFile(
+			filepath.FromSlash(path),
+		)
+		assert.Nil(b, err)
+		return data
+	}
 
-		target, err := loadData(i, "target")
-		if err != nil {
-			b.Error(err)
-		}
+	tests := []struct {
+		origin []byte
+		delta  []byte
+	}{
+		{
+			origin: readFile("data/1/origin"),
+			delta:  readFile("data/1/delta"),
+		},
+		{
+			origin: readFile("data/2/origin"),
+			delta:  readFile("data/2/delta"),
+		},
+		{
+			origin: readFile("data/3/origin"),
+			delta:  readFile("data/3/delta"),
+		},
+		{
+			origin: readFile("data/4/origin"),
+			delta:  readFile("data/4/delta"),
+		},
+		{
+			origin: readFile("data/5/origin"),
+			delta:  readFile("data/5/delta"),
+		},
+	}
 
-		if err != nil {
-			b.Error(err)
-		}
-
-		delta := Create(origin, target)
-
-		b.Run(fmt.Sprintf("ApplyDelta%d", i), func(b *testing.B) {
+	for i, test := range tests {
+		b.Run(fmt.Sprintf("ApplyDelta%d", i + 1), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Apply(origin, delta)
+				Apply(test.origin, test.delta)
 			}
 		})
-
 	}
-}
-
-func loadData(i int, name string) ([]byte, error) {
-	return ioutil.ReadFile(
-		filepath.FromSlash(fmt.Sprintf("%s/%d/%s", "data", i, name)),
-	)
 }
