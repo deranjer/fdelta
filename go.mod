@@ -1,4 +1,4 @@
-module github.com/mdvan/fdelta
+module github.com/amlwwalker/fdelta
 
 go 1.13
 
